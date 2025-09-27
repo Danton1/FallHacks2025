@@ -1,12 +1,12 @@
+import { generatePlaylistUrl } from '@/constants/youtube-playlist-links';
 import React, { useMemo } from "react";
-import { View, Platform } from "react-native";
-import { WebView } from "react-native-webview";
+import { Platform, View } from "react-native";
 
 type Props = { query: string };
 
 export default function YoutubePlayer({ query }: Props) {
   const q = encodeURIComponent(query);
-  const url = `https://www.youtube.com/embed?listType=search&list=${q}&autoplay=0`;
+  const url = generatePlaylistUrl();
 
   const WebView = useMemo(() => require("react-native-webview").WebView, []);
 
@@ -20,13 +20,16 @@ export default function YoutubePlayer({ query }: Props) {
           overflow: "hidden" as any,
         }}
       >
-        <iframe
-          src={url}
+        <iframe 
           style={{ border: 0, width: "100%", height: "100%" }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          src={url}
+          title="YouTube video player" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          referrerPolicy="strict-origin-when-cross-origin" 
           allowFullScreen
           loading="lazy"
-        />
+        >  
+        </iframe>
       </div>
     );
   }
