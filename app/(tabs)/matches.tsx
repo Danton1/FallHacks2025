@@ -1,13 +1,17 @@
-import React from 'react';
-import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from 'expo-router';
-import { useStore } from '../../state/useStore';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Link, router } from 'expo-router';
+import React from 'react';
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useStore } from '../../state/useStore';
+
 
 export default function Matches() {
   const likes = useStore(s=>s.likes);
+  const removeLike = useStore(s => s.removeLike);
+  
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={{ flex:1, padding: 16 }}>
@@ -22,6 +26,9 @@ export default function Matches() {
                 <Text style={{ fontSize:16, fontWeight:'600' }}>{item.name}</Text>
                 <Text style={{ color:'#555' }}>Tap to view recipe + music</Text>
               </View>
+              <Pressable onPress={()=>removeLike(item.id)}>
+                <MaterialIcons name="delete" size={24} color="red" />
+              </Pressable>
             </Pressable>
           )}
           ListEmptyComponent={<Text>No matches yet. Go swipe some dishes!</Text>}
