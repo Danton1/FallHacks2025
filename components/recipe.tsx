@@ -49,3 +49,13 @@ export async function generateRecipeObject() {
         console.error('Error fetching data:', error);
     } 
 }
+
+export async function generateTenRecipeObjects() {
+  const promises = [];
+  for (let i = 0; i < 10; i++) {
+    promises.push(generateRecipeObject());
+  }
+  const results = await Promise.all(promises);
+  // Filter out any undefined results (in case of errors)
+  return results.filter((r): r is RecipeProps => !!r);
+}
