@@ -1,13 +1,30 @@
 import { fetchRandomRecipe } from '@/components/fetch-api';
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { generateRecipeObject, RecipeProps } from '@/components/recipe';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
 export default function HomeScreen() {
+  const recipeQueue = []
+  const recipeQueueCounter = 0;
+
+const [recipe, setRecipe] = useState<RecipeProps | null>(null);
+
+  useEffect(() => {
+    generateRecipeObject().then(result => {
+      if (result) {
+        setRecipe(result);
+      } else {
+        setRecipe(null);
+      }
+    });
+  }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
