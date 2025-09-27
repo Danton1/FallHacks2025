@@ -1,108 +1,78 @@
-import { fetchRandomRecipe } from '@/components/fetch-api';
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { generateTenRecipeObjects, RecipeProps } from '@/components/recipe';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Image } from 'expo-image';
-import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useState } from "react";
+import { View, ActivityIndicator, StyleSheet, Alert } from "react-native";
+import SwipeCard from "@/components/SwipeCard";
+import MatchOverlay from "@/components/MatchOverlay";
+import { generateTenRecipeObjects, RecipeProps } from "@/components/recipe";
+import { useStore } from "@/state/useStore";
+import { router } from "expo-router";
+import { ThemedView } from "@/components/themed-view";
 
-export default function HomeScreen() {
-  const recipeQueueCounter = 0;
-  const [recipeQueue, setRecipeQueue] = useState<RecipeProps[]>([]);
+export default function SwipeScreen() {
+  const [deck, setDeck] = useState<RecipeProps[]>([]);
+  const [idx, setIdx] = useState(0);
+  const [showMatch, setShowMatch] = useState(false);
+  const addLike = useStore(s => s.addLike);
+  const addSwiped = useStore(s => s.addSwiped);
+  const hasSwiped = useStore(s => s.hasSwiped);
 
-useEffect(() => {
-  generateTenRecipeObjects().then(setRecipeQueue);
-}, []);
+  // Load an initial deck and refill when running low
+  async function refillDeck() {
+    const batch = await generateTenRecipeObjects();
+    const filtered = batch.filter(r => !hasSwiped(r.id));
+    setDeck(prev => [...prev, ...filtered]);
+  }
+
+  useEffect(() => { refillDeck(); }, []);
+
+  useEffect(() => {
+    if (idx >= deck.length - 2) {
+      // Near the end, fetch more
+      refillDeck();
+    }
+  }, [idx, deck.length]);
+
+  const current = deck[idx];
+
+  if (!current) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText onPress={fetchRandomRecipe}>API CALL for Recipe</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ThemedView style={styles.container}>
+      <SwipeCard
+        title={current.name}
+        subtitle={[current.area, current.type].filter(Boolean).join(" • ")}
+        image={current.image}
+        onSwipeLeft={() => {
+          addSwiped(current.id);
+          setIdx(i => i + 1);
+        }}
+        onSwipeRight={() => {
+          addSwiped(current.id);
+          addLike({ id: current.id, name: current.name, image: current.image });
+          setShowMatch(true);
+        }}
+      />
+      <MatchOverlay
+        visible={showMatch}
+        mealName={current.name}
+        mealImage={current.image}
+        onDone={() => {
+          setShowMatch(false);
+          const toOpen = current.id;
+          setIdx(i => i + 1);
+          router.push(`/recipe/${toOpen}`);
+        }}
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  container: { flex: 1, justifyContent: "center", padding: 16 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

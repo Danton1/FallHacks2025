@@ -1,17 +1,18 @@
 import { fetchRandomRecipe } from '@/components/fetch-api';
 
 export type RecipeProps = {
-    id: String;
-    name: String;
-    type: String;
+    id: string;
+    name: string;
+    type: string;
+    area: string;
     ingredients: Array<IngredientProps>;
-    instructions: String;
-    image: String;
+    instructions: string;
+    image: string;
 }
 
 type IngredientProps = {
-    measurement: String,
-    name: String
+    measurement: string,
+    name: string
 }
 
 export async function generateRecipeObject() {
@@ -38,7 +39,8 @@ export async function generateRecipeObject() {
         const recipeObject = {
             id: recipe.idMeal,
             name: recipe.strMeal,
-            type: recipe.strArea,
+            type: recipe.strCategory,
+            area: recipe.strArea,
             ingredients: ingredientArray,
             instructions: recipe.strInstructions,
             image: recipe.strMealThumb
