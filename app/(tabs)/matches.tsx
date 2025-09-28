@@ -5,17 +5,17 @@ import { Link, router } from 'expo-router';
 import React from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useStore } from '../../state/useStore';
-
+import { useAppStore } from '@/lib/StoreContext';
 
 export default function Matches() {
-  const likes = useStore(s=>s.likes);
-  const removeLike = useStore(s => s.removeLike);
-  
+  const { likes, removeLike } = useAppStore();
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={{ flex:1, padding: 16 }}>
-        <ThemedText style={{ fontSize: 22, fontWeight: '700', marginBottom: 12 }}>Your Matches</ThemedText>
+        <ThemedText style={{ fontSize: 22, fontWeight: '700', marginBottom: 12 }}>
+          Your Matches
+        </ThemedText>
         <FlatList
           data={likes}
           keyExtractor={(item)=>item.id}
@@ -33,7 +33,9 @@ export default function Matches() {
           )}
           ListEmptyComponent={<Text>No matches yet. Go swipe some dishes!</Text>}
         />
-      <Link href="/" style={{ marginTop: 12, textAlign:'center', textDecorationLine:'underline' }}>← Back to swiping</Link>
+        <Link href="/" style={{ marginTop: 12, textAlign:'center', textDecorationLine:'underline' }}>
+          ← Back to swiping
+        </Link>
       </ThemedView>
     </SafeAreaView>
   );

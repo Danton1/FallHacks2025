@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { fetchMealById } from '@/components/fetch-api';
+import { StoreProvider } from '../lib/StoreContext';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -28,6 +29,7 @@ export default function RootLayout() {
   }, [id]);
 
   return (
+    <StoreProvider>
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
@@ -43,5 +45,6 @@ export default function RootLayout() {
         <StatusBar style="auto" />
       </ThemeProvider>
     </SafeAreaProvider>
+    </StoreProvider>
   );
 }

@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { View, ActivityIndicator, StyleSheet, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import SwipeCard from "@/components/SwipeCard";
 import MatchOverlay from "@/components/MatchOverlay";
 import { generateTenRecipeObjects, RecipeProps } from "@/components/recipe";
-import { useStore } from "@/state/useStore";
+import { useAppStore } from "@/lib/StoreContext"; // <- use your Context store
 import { router } from "expo-router";
 import { ThemedView } from "@/components/themed-view";
 
@@ -11,11 +11,10 @@ export default function SwipeScreen() {
   const [deck, setDeck] = useState<RecipeProps[]>([]);
   const [idx, setIdx] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
-  const addLike = useStore(s => s.addLike);
-  const addSwiped = useStore(s => s.addSwiped);
-  const hasSwiped = useStore(s => s.hasSwiped);
 
-  // Load an initial deck and refill when running low
+  const { likes, addLike, addSwiped, swipedIds } = useAppStore();
+  const hasSwiped = (id: string) => swipedIds.includes(id);
+
   async function refillDeck() {
     const batch = await generateTenRecipeObjects();
     const filtered = batch.filter(r => !hasSwiped(r.id));
@@ -25,10 +24,7 @@ export default function SwipeScreen() {
   useEffect(() => { refillDeck(); }, []);
 
   useEffect(() => {
-    if (idx >= deck.length - 2) {
-      // Near the end, fetch more
-      refillDeck();
-    }
+    if (idx >= deck.length - 2) refillDeck();
   }, [idx, deck.length]);
 
   const current = deck[idx];
